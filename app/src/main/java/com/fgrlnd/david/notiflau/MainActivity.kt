@@ -22,7 +22,8 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         createGrid(queryInstalledApps(this))
 
-        sendNotification(this, queryInstalledApps(this))
+        val apps = queryInstalledApps(this);
+        sendNotification(this, apps, 0)
     }
 
     private fun createGrid(apps: List<App>) {

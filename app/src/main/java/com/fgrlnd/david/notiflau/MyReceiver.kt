@@ -8,20 +8,35 @@ class MyReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
-        val packageName = intent.action
-        if (packageName != null) {
-            val launchIntent: Intent? =
-                context.packageManager.getLaunchIntentForPackage(packageName)
-            if (launchIntent != null) {
-                // Update recent entry with current timestamp
-                updateRecent(context, packageName)
+        val action = intent.action
+        if (action != null) {
+            val start = when {
+                action.startsWith("next") -> {
+                    action.split(":")[1].toInt()
+                }
+                action.startsWith("previous") -> {
+                    action.split(":")[1].toInt()
+                }
+                else -> {
+                    // Launch app
+                    val launchIntent: Intent? =
+                        context.packageManager.getLaunchIntentForPackage(action)
+                    if (launchIntent != null) {
+                        // Update recent entry with current timestamp
+                        updateRecent(context, action)
 
-                // Update notification
-                sendNotification(context, queryInstalledApps(context))
+                        // Update notification
+                        sendNotification(context, queryInstalledApps(context), 0)
 
-                // Open app
-                context.startActivity(launchIntent)
+                        // Open app
+                        context.startActivity(launchIntent)
+                    }
+
+                    // Reset recent app notification list
+                    0
+                }
             }
+            sendNotification(context, queryInstalledApps(context), start)
         }
     }
 

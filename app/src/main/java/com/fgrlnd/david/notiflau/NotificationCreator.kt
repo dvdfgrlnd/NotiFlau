@@ -14,14 +14,14 @@ private const val channelId = "main_notification"
 private const val channelName = "main_notification_name"
 private const val descriptionText = "description_text"
 
-fun sendNotification(context: Context, apps: List<App>) {
+fun sendNotification(context: Context, apps: List<App>, start: Int) {
     val recent = loadRecent(context)
     val findRecent = { pn: String -> recent.find { it.packageName == pn } }
 
     // Sort apps by recent then alphabetical
-    val sortedApps = apps.sortedWith { t1, t2 ->
-        val r1 = findRecent(t1.packageName)
-        val r2 = findRecent(t2.packageName)
+    var sortedApps = apps.sortedWith { a1, a2 ->
+        val r1 = findRecent(a1.packageName)
+        val r2 = findRecent(a2.packageName)
         if (r1 != null && r2 != null) {
             // Multiply by -1 to reverse comparison s.t. timestamp is sorted in descending order
             (-1) * r1.used.compareTo(r2.used)
@@ -32,9 +32,10 @@ fun sendNotification(context: Context, apps: List<App>) {
             // t2 before t1
             1
         } else {
-            t1.appName.compareTo(t2.appName)
+            a1.appName.compareTo(a2.appName)
         }
     }
+    sortedApps = sortedApps.subList(start, (start + 9).coerceAtMost(apps.size))
 
     updateRecentList(context, recent, apps)
 
@@ -43,11 +44,11 @@ fun sendNotification(context: Context, apps: List<App>) {
 
     notificationLayout.addView(
         R.id.view_container,
-        createNotificationButton(context, "previous", "previous")
+        createNotificationButton(context, "previous:${(start - 9).coerceAtLeast(0)}", "previous")
     )
     notificationLayout.addView(
         R.id.view_container,
-        createNotificationButton(context, "next", "next")
+        createNotificationButton(context, "next:${start + 9}", "next")
     )
     notificationLayout.addView(
         R.id.view_container,
