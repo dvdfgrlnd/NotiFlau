@@ -19,8 +19,6 @@ import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import android.content.pm.ResolveInfo
-import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,23 +32,20 @@ class MainActivity : AppCompatActivity() {
 
         createNotificationChannel()
 
-        val installedApplications: List<ApplicationInfo> =
-            packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        val apps = installedApplications.filter {
-            packageManager.getLaunchIntentForPackage(it.packageName) != null
-        }
-            .map {
-                App(
-                    it.loadLabel(packageManager).toString(),
-                    it.packageName,
-                    getIcon(it.packageName)
-                )
-            }
+    }
 
+    override fun onResume() {
+        super.onResume()
+        createGrid(queryInstalledApps())
 
-        // Add to activity
+        sendNotification(queryInstalledApps())
+    }
+
+    fun createGrid(apps: List<App>) {
+        val sortedApps = apps.sortedBy { it.appName.lowercase() }
+
         val grid: GridLayout = findViewById(R.id.grid_container)
-        for(app in apps){
+        for (app in sortedApps) {
             val view = View.inflate(this, R.layout.button_view, null)
             val b = view.findViewById<Button>(R.id.notif_button)
             b.text = app.appName
@@ -62,6 +57,45 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             grid.addView(view)
+        }
+    }
+
+    fun sendNotification(apps: List<App>) {
+        val recent = loadRecent()
+        val findRecent = { pn: String -> recent.find { it.packageName == pn } }
+
+        // Sort apps by recent then alphabetical
+        val sortedApps = apps.sortedWith { t1, t2 ->
+            val r1 = findRecent(t1.packageName)
+            val r2 = findRecent(t2.packageName)
+            if (r1 != null && r2 != null) {
+                // Multiply by -1 to reverse comparison s.t. timestamp is sorted in descending order
+                (-1) * r1.used.compareTo(r2.used)
+            } else if (r1 != null) {
+                // t1 before t2
+                -1
+            } else if (r2 != null) {
+                // t2 before t1
+                1
+            } else {
+                t1.appName.compareTo(t2.appName)
+            }
+        }
+
+        // Get the layouts to use in the custom notification
+        val notificationLayout = RemoteViews(packageName, R.layout.notification_small)
+
+        notificationLayout.addView(
+            R.id.view_container,
+            createNotificationButton("previous", "previous")
+        )
+        notificationLayout.addView(R.id.view_container, createNotificationButton("next", "next"))
+        notificationLayout.addView(R.id.view_container, createNotificationButton("open", "open"))
+        // Add to notification
+        for (app in sortedApps) {
+            val vb = createNotificationButton(app.packageName, app.appName)
+
+            notificationLayout.addView(R.id.view_container, vb)
         }
 
 
@@ -82,28 +116,48 @@ class MainActivity : AppCompatActivity() {
             // notificationId is a unique int for each notification that you must define
             notify(1337, builder.build())
         }
-
-
     }
 
-    fun buildNotification(){
-        // Get the layouts to use in the custom notification
-        val notificationLayout = RemoteViews(packageName, R.layout.notification_small)
-
-        // Add to notification
-        for (app in apps) {
-            val intent2 = Intent(this, MyReceiver::class.java)
-            intent2.action = app.packageName
-            val pendingIntent2: PendingIntent =
-                PendingIntent.getBroadcast(this, 0, intent2, PendingIntent.FLAG_UPDATE_CURRENT)
-
-            val vb = RemoteViews(packageName, R.layout.button_view)
-            vb.setOnClickPendingIntent(R.id.notif_button, pendingIntent2)
-            vb.setTextViewText(R.id.notif_button, app.appName)
-
-            notificationLayout.addView(R.id.view_container, vb)
+    fun loadRecent(): List<Recent> {
+        val sharedPreferences = getSharedPreferences("recentprefs", MODE_PRIVATE)
+        val recent = sharedPreferences.getStringSet("recent", null)
+        if (recent != null) {
+            return recent.map {
+                val s = it.split("^")
+                Recent(s[0], s[1].toLong())
+            }
         }
 
+        return emptyList()
+    }
+
+    private fun createNotificationButton(action: String, buttonText: String): RemoteViews {
+        val intent2 = Intent(this, MyReceiver::class.java)
+        intent2.action = action
+        val pendingIntent2: PendingIntent =
+            PendingIntent.getBroadcast(this, 0, intent2, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val vb = RemoteViews(packageName, R.layout.button_view)
+        vb.setOnClickPendingIntent(R.id.notif_button, pendingIntent2)
+        vb.setTextViewText(R.id.notif_button, buttonText)
+        return vb
+    }
+
+    fun queryInstalledApps(): List<App> {
+        val installedApplications: List<ApplicationInfo> =
+            packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+        val apps = installedApplications.filter {
+            packageManager.getLaunchIntentForPackage(it.packageName) != null
+        }
+            .map {
+                App(
+                    it.loadLabel(packageManager).toString(),
+                    it.packageName,
+                    getIcon(it.packageName)
+                )
+            }
+
+        return apps
     }
 
     private fun getIcon(packageName: String): Drawable {

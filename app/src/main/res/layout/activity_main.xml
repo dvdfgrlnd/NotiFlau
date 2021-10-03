@@ -12,7 +12,7 @@
         android:id="@+id/grid_container"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-
+        android:columnCount="3"
         android:orientation="horizontal"
         android:useDefaultMargins="true">
         <!-- New views will be added here at runtime -->
