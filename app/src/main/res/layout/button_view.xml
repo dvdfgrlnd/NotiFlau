@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notif_button"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:textSize="10dp"
+    android:layout_weight="1"
+    android:background="@color/white"
+    android:text="Button" />
