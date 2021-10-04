@@ -48,6 +48,12 @@ class MainActivity : AppCompatActivity() {
                 val launchIntent: Intent? =
                     packageManager.getLaunchIntentForPackage(app.packageName)
                 if (launchIntent != null) {
+                    // Update recent entry with current timestamp
+                    updateRecent(this, app.packageName)
+
+                    // Update notification
+                    sendNotification(this, apps, 0)
+
                     startActivity(launchIntent)
                 }
             }

@@ -44,13 +44,4 @@ class MyReceiver : BroadcastReceiver() {
     }
 
 
-    private fun updateRecent(context: Context, packageName: String) {
-        val recent = loadRecent(context)
-
-        // Filter out recent entry with same package name and then add a new entry
-        val updatedRecent = recent.filter { it.packageName != packageName }.toMutableSet()
-        updatedRecent.add(Recent(packageName, System.currentTimeMillis()))
-
-        saveRecent(context, updatedRecent)
-    }
 }
