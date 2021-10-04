@@ -62,10 +62,11 @@ fun sendNotification(context: Context, apps: List<App>, start: Int) {
             loadDrawable(context, R.drawable.baseline_arrow_forward_ios_black_48dp)
         )
     )
+    // Go to this app
     notificationLayout.addView(
         R.id.view_container,
         createNotificationImage(
-            context, "open",
+            context, context.packageName,
             loadDrawable(context, R.drawable.baseline_home_black_48dp)
         )
     )
