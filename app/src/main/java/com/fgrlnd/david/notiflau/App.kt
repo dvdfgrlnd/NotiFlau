@@ -5,7 +5,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 
-data class App(val appName: String, val packageName: String, val icon: Drawable)
+data class App(val appName: String, val packageName: String, val icon: Drawable?)
 
 fun queryInstalledApps(context: Context): List<App> {
     val installedApplications: List<ApplicationInfo> =
@@ -17,7 +17,7 @@ fun queryInstalledApps(context: Context): List<App> {
             App(
                 it.loadLabel(context.packageManager).toString(),
                 it.packageName,
-                getIcon(context, it.packageName)
+                null
             )
         }
 

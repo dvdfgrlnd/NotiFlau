@@ -30,6 +30,9 @@ class MyReceiver : BroadcastReceiver() {
 
                         // Open app
                         context.startActivity(launchIntent)
+
+                        // Close notification/status bar
+                        context.sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
                     }
 
                     // Reset recent app notification list

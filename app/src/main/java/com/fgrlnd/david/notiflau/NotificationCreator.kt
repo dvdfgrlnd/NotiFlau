@@ -35,7 +35,8 @@ fun sendNotification(context: Context, apps: List<App>, start: Int) {
             a1.appName.compareTo(a2.appName)
         }
     }
-    sortedApps = sortedApps.subList(start, (start + 9).coerceAtMost(apps.size))
+    sortedApps =
+        sortedApps.subList(start, (start + 9).coerceAtMost(apps.size))
 
     updateRecentList(context, recent, apps)
 
@@ -48,7 +49,7 @@ fun sendNotification(context: Context, apps: List<App>, start: Int) {
     )
     notificationLayout.addView(
         R.id.view_container,
-        createNotificationButton(context, "next:${start + 9}", "next")
+        createNotificationButton(context, "next:${(start + 9).coerceAtMost(apps.size)}", "next")
     )
     notificationLayout.addView(
         R.id.view_container,

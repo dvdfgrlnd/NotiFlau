@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         for (app in sortedApps) {
             val view = View.inflate(this, R.layout.button_view, null)
             val b = view.findViewById<Button>(R.id.notif_button)
-            b.text = app.appName
+            b.text = app.appName.subSequence(0, (8 as Int).coerceAtMost(app.appName.length))
             b.setOnClickListener {
                 val launchIntent: Intent? =
                     packageManager.getLaunchIntentForPackage(app.packageName)
