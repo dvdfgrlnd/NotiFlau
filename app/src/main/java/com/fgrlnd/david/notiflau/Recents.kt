@@ -36,9 +36,11 @@ fun saveRecent(context: Context, recent: Collection<Recent>) {
 
 
 fun updateRecentList(context: Context, recent: List<Recent>, apps: List<App>) {
-    // Remove recent entries for uninstalled apps
+    // Remove recent entries for uninstalled apps, and apps not used in the last week
+    val now = System.currentTimeMillis()
     val filtered = recent.filter { rec ->
         apps.find { app -> app.packageName == rec.packageName } != null
+                && (now - rec.used) < (7 * 24 * 60 * 60 * 1000)
     }
 
     saveRecent(context, filtered)
