@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         val sortedApps = apps.sortedBy { it.appName.lowercase() }
 
         val grid: GridLayout = findViewById(R.id.grid_container)
+        grid.removeAllViews()
         val d = floor(0.8 * (grid.width / 9).toDouble()).toInt()
         for (app in sortedApps) {
             val view = View.inflate(this, R.layout.button_view, null)
