@@ -7,6 +7,7 @@
     tools:context=".MainActivity">
 
     <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
@@ -15,9 +16,9 @@
 
         <GridLayout
             android:id="@+id/grid_container"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:columnCount="3"
+            android:columnCount="9"
             android:orientation="horizontal"
             android:useDefaultMargins="true"
             app:layout_constraintStart_toStartOf="parent"

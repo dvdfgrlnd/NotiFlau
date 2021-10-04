@@ -5,14 +5,18 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 
 private const val channelId = "main_notification"
 private const val channelName = "main_notification_name"
 private const val descriptionText = "description_text"
+private const val maxNumApps = (7 * 4) - 3
 
 fun sendNotification(context: Context, apps: List<App>, start: Int) {
     val recent = loadRecent(context)
@@ -36,7 +40,7 @@ fun sendNotification(context: Context, apps: List<App>, start: Int) {
         }
     }
     sortedApps =
-        sortedApps.subList(start, (start + 9).coerceAtMost(apps.size))
+        sortedApps.subList(start, (start + maxNumApps).coerceAtMost(apps.size))
 
     updateRecentList(context, recent, apps)
 
@@ -45,19 +49,30 @@ fun sendNotification(context: Context, apps: List<App>, start: Int) {
 
     notificationLayout.addView(
         R.id.view_container,
-        createNotificationButton(context, "previous:${(start - 9).coerceAtLeast(0)}", "previous")
+        createNotificationImage(
+            context,
+            "previous:${(start - maxNumApps).coerceAtLeast(0)}",
+            loadDrawable(context, R.drawable.baseline_arrow_back_ios_black_48dp)
+        )
     )
     notificationLayout.addView(
         R.id.view_container,
-        createNotificationButton(context, "next:${(start + 9).coerceAtMost(apps.size)}", "next")
+        createNotificationImage(
+            context, "next:${(start + maxNumApps).coerceAtMost(apps.size)}",
+            loadDrawable(context, R.drawable.baseline_arrow_forward_ios_black_48dp)
+        )
     )
     notificationLayout.addView(
         R.id.view_container,
-        createNotificationButton(context, "open", "open")
+        createNotificationImage(
+            context, "open",
+            loadDrawable(context, R.drawable.baseline_home_black_48dp)
+        )
     )
+
     // Add to notification
     for (app in sortedApps) {
-        val vb = createNotificationButton(context, app.packageName, app.appName)
+        val vb = createNotificationImage(context, app.packageName, app.icon)
 
         notificationLayout.addView(R.id.view_container, vb)
     }
@@ -82,20 +97,24 @@ fun sendNotification(context: Context, apps: List<App>, start: Int) {
     }
 }
 
-private fun createNotificationButton(
+private fun createNotificationImage(
     context: Context,
     action: String,
-    buttonText: String
+    buttonText: Drawable
 ): RemoteViews {
     val intent2 = Intent(context, MyReceiver::class.java)
     intent2.action = action
     val pendingIntent2: PendingIntent =
         PendingIntent.getBroadcast(context, 0, intent2, PendingIntent.FLAG_UPDATE_CURRENT)
 
-    val vb = RemoteViews(context.packageName, R.layout.button_view)
+    val vb = RemoteViews(context.packageName, R.layout.image_view)
     vb.setOnClickPendingIntent(R.id.notif_button, pendingIntent2)
-    vb.setTextViewText(R.id.notif_button, buttonText)
+    vb.setImageViewBitmap(R.id.notif_button, buttonText.toBitmap())
     return vb
+}
+
+private fun loadDrawable(context: Context, resource: Int): Drawable {
+    return ResourcesCompat.getDrawable(context.resources, resource, null)!!
 }
 
 fun createNotificationChannel(context: Context) {
