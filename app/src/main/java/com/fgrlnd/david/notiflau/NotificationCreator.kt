@@ -36,7 +36,7 @@ fun sendNotification(context: Context, apps: List<App>, start: Int) {
             // t2 before t1
             1
         } else {
-            a1.appName.compareTo(a2.appName)
+            a1.appName.lowercase().compareTo(a2.appName.lowercase())
         }
     }
     sortedApps =
